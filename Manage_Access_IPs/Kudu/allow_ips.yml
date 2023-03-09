@@ -1,0 +1,63 @@
+trigger:
+- none
+
+pool:
+  name: "MyAgentPool" #Set the name of your agent
+
+parameters:
+- name: environment
+  displayName: Select the target environment
+  type: string
+  default: 'DEV'
+  values:
+  - 'DEV'
+  - 'TST'
+  - 'UAT'
+
+- name: region
+  displayName: Select the target region
+  type: string
+  default: 'EU'
+  values:
+  - 'EU'
+  - 'US'
+  - 'AU'   
+
+variables:
+- ${{ if eq(parameters.environment, 'DEV') }}: 
+  - name: ENVIRONMENT
+    value: 'DEV'
+  - group: var-devops-app1-dev-eu #Set the variable group which contains information about your resources and your environment
+  - name: SERVICE-CONNECTION
+    value: 'ServiceConnectionDEV' #Set the name of the service connection
+
+- ${{ if eq(parameters.environment, 'TST') }}: 
+  - name: ENVIRONMENT
+    value: 'TST'
+  - group: var-devops-app1-tst-eu   
+  - name: SERVICE-CONNECTION
+    value: 'ServiceConnectionTST'  
+
+- ${{ if eq(parameters.environment, 'UAT') }}: 
+  - name: ENVIRONMENT
+    value: 'UAT'
+  - name: SERVICE-CONNECTION
+    value: 'ServiceConnectionUAT'      
+  - ${{ if eq(parameters.region, 'EU') }}: #You can have several regions per environment
+    - group: var-devops-app1-uat-eu
+  - ${{ elseif eq(parameters.region, 'US') }}:
+    - group: var-devops-app1-uat-us    
+  - ${{ elseif eq(parameters.region, 'AU') }}:
+    - group: var-devops-app1-uat-au
+
+steps:
+- task: AzurePowerShell@5
+  displayName: 'Add IP on Kudu'
+  inputs:
+    azureSubscription: $(SERVICE-CONNECTION)
+    azurePowerShellVersion: LatestVersion
+    scriptType: filePath
+    scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Add_IPs_to_Kudu.ps1" #Path of your script
+    ScriptArguments: -Environment $(Environment) #Define the different arguments required in your context
+      -ResourceGroupName $(ResourceGroupName)
+      -AppServiceName $(AppServiceName)  

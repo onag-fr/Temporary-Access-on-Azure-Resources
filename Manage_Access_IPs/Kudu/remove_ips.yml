@@ -1,0 +1,105 @@
+trigger:
+- none
+
+pool:
+  name: "MyAgentPool" #Set the name of your agent
+
+variables:
+  - name: SERVICE-CONNECTION-DEV
+    value: 'ServiceConnectionDEV' #Set the name of the service connection
+  - name: SERVICE-CONNECTION-TST
+    value: 'ServiceConnectionTST'     
+  - name: SERVICE-CONNECTION-UAT
+    value: 'ServiceConnectionUAT'
+
+stages:
+- stage: DEV
+  jobs:
+  - job: Clean_EU_region
+    variables:
+    - name: ENVIRONMENT
+      value: 'DEV'
+    - group: var-devops-app1-dev-eu
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Remove IPs from DEV - EU'
+      inputs:
+        azureSubscription: $(SERVICE-CONNECTION-DEV)
+        azurePowerShellVersion: LatestVersion
+        scriptType: filePath
+        scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Remove_IPs_from_Kudu.ps1"  #Path of your script
+        ScriptArguments: -Environment $(Environment) #Define the different arguments required in your context
+          -ResourceGroupName $(ResourceGroupName)
+          -AppServiceName $(AppServiceName)  
+
+- stage: TST
+  jobs:
+  - job: Clean_EU_region
+    variables:
+    - name: ENVIRONMENT
+      value: 'TST'
+    - group: var-devops-app1-tst-eu
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Remove IPs from TST - EU'
+      inputs:
+        azureSubscription: $(SERVICE-CONNECTION-TST)
+        azurePowerShellVersion: LatestVersion
+        scriptType: filePath
+        scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Remove_IPs_from_Kudu.ps1"
+        ScriptArguments: -Environment $(Environment)
+          -ResourceGroupName $(ResourceGroupName)
+          -AppServiceName $(AppServiceName)
+
+- stage: UAT
+  jobs:
+  - job: Clean_EU_region
+    variables:
+    - name: ENVIRONMENT
+      value: 'UAT'
+    - group: var-devops-app1-uat-eu 
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Remove IPs from UAT - EU'
+      inputs:
+        azureSubscription: $(SERVICE-CONNECTION-UAT)
+        azurePowerShellVersion: LatestVersion
+        scriptType: filePath
+        scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Remove_IPs_from_Kudu.ps1"
+        ScriptArguments: -Environment $(Environment)
+          -ResourceGroupName $(ResourceGroupName)
+          -AppServiceName $(AppServiceName)   
+
+  - job: Clean_US_region
+    variables:
+    - name: ENVIRONMENT
+      value: 'UAT'
+    - group: var-devops-app1-uat-us 
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Remove IPs from UAT - US'
+      inputs:
+        azureSubscription: $(SERVICE-CONNECTION-UAT)
+        azurePowerShellVersion: LatestVersion
+        scriptType: filePath
+        scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Remove_IPs_from_Kudu.ps1"
+        ScriptArguments: -Environment $(Environment)
+          -ResourceGroupName $(ResourceGroupName)
+          -AppServiceName $(AppServiceName)   
+              
+  - job: Clean_AU_region
+    variables:
+    - name: ENVIRONMENT
+      value: 'UAT'
+    - group: var-devops-app1-uat-au 
+    steps:
+    - task: AzurePowerShell@5
+      displayName: 'Remove IPs from UAT - AU'
+      inputs:
+        azureSubscription: $(SERVICE-CONNECTION-UAT)
+        azurePowerShellVersion: LatestVersion
+        scriptType: filePath
+        scriptPath: "$(System.DefaultWorkingDirectory)/Manage_Access_IPs/Kudu/Remove_IPs_from_Kudu.ps1"
+        ScriptArguments: -Environment $(Environment)
+          -ResourceGroupName $(ResourceGroupName)
+          -AppServiceName $(AppServiceName)               
